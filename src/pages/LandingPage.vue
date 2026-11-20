@@ -53,7 +53,7 @@ import '../styles/landing.css'
           상품 정보만 입력하세요.<br />
           상품사진과 모바일 페이지까지 한번에 만들어 드려요.
         </p>
-        <RouterLink class="landing-button" to="/enter">시작하기</RouterLink>
+        <RouterLink class="landing-button" to="/builder">시작하기</RouterLink>
         <p class="landing-hero__note">디자인 경험 없이도, 복잡한 쇼핑몰 없이도 OK!</p>
       </div>
 
@@ -198,7 +198,6 @@ import '../styles/landing.css'
           </div>
           <div class="landing-result-card__visual landing-result-card__visual--mobile" aria-hidden="true">
             <img class="landing-result-card__mobile" :src="resultMobileUrl" alt="" />
-            <img class="landing-result-card__small-card" :src="resultCardUrl" alt="" />
           </div>
           <p class="landing-result-card__caption">
             <img :src="dotUrl" alt="" aria-hidden="true" />
@@ -247,7 +246,7 @@ import '../styles/landing.css'
           <h2 id="landing-final-title">좋은 상품이 더 많은 손님을 만나도록</h2>
           <p>첫 상품 페이지, 바로온장과 함께 만들어보세요.</p>
         </div>
-        <RouterLink class="landing-button" to="/enter">시작하기</RouterLink>
+        <RouterLink class="landing-button" to="/builder">시작하기</RouterLink>
       </div>
     </section>
 

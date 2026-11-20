@@ -1,6 +1,8 @@
 :root {
   --color-text-dark: #13161c;
   --color-text-muted: #7b818b;
+  --color-gray-light: #acb1b8;
+  --color-input-border: #d4d8e3;
   --color-surface-blue: #f7f8fa;
   --color-gray-6: #f2f2f2;
   --color-carrot: #ff6430;

@@ -1,0 +1,195 @@
+.builder-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  padding: 0 50px;
+  background: var(--color-white);
+}
+
+/* Brand */
+.builder-header {
+  display: flex;
+  flex: 0 0 135px;
+  align-items: flex-start;
+  justify-content: center;
+  width: 620px;
+  padding: 50px 0;
+}
+
+.builder-header__brand {
+  color: var(--color-text-heading);
+  font-size: 29px;
+  font-weight: 700;
+  line-height: normal;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Main */
+.builder-main {
+  width: 560px;
+  padding-bottom: 60px;
+}
+
+.builder-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  height: 86px;
+  padding-bottom: 50px;
+}
+
+.builder-heading h1 {
+  margin: 0;
+  color: var(--color-text-dark);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+/* Step indicator */
+.builder-steps {
+  position: relative;
+  display: flex;
+  gap: 18px;
+  width: 120px;
+  height: 28px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.builder-steps__line {
+  position: absolute;
+  z-index: 0;
+  top: 13px;
+  left: 30px;
+  width: 90px;
+  height: 2px;
+}
+
+.builder-steps__item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--color-white);
+  border-radius: 50%;
+  color: var(--color-white);
+  background: var(--color-gray-light);
+  font-family: 'Pretendard GOV';
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.builder-steps__item--active {
+  background: var(--color-carrot);
+}
+
+/* Product form */
+.product-form,
+.product-form__fields {
+  width: 100%;
+}
+
+.product-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.product-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.product-field label {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.product-field__control {
+  width: 100%;
+  height: 56px;
+  padding: 0 16px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 6px;
+  outline: none;
+  color: var(--color-text-dark);
+  background: var(--color-white);
+  font-family: 'Pretendard GOV';
+  font-size: 16px;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.product-field__control::placeholder,
+.product-field__select.is-placeholder {
+  color: var(--color-gray-light);
+  opacity: 1;
+}
+
+.product-field__select {
+  appearance: none;
+}
+
+.product-form__bottom {
+  width: 100%;
+  padding-top: 30px;
+}
+
+.product-form__next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 72px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: var(--color-white);
+  background: var(--color-text-dark);
+  font-family: 'A2z';
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .builder-page {
+    padding: 0 20px;
+  }
+
+  .builder-header,
+  .builder-main {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .builder-header {
+    flex-basis: 115px;
+    padding: 40px 0;
+  }
+
+  .builder-heading {
+    flex-direction: column;
+    gap: 20px;
+    height: auto;
+    padding-bottom: 36px;
+  }
+}

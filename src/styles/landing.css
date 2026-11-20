@@ -638,9 +638,7 @@
 .landing-result-card__mobile {
   position: absolute;
   top: 50%;
-  left: calc(50% + 15.5px);
-  width: 209px;
-  height: 209px;
+  left: calc(50% + 1px);
   object-fit: cover;
   transform: translate(-50%, -50%);
 }
