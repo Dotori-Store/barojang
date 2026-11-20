@@ -1,4 +1,7 @@
 <script setup>
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import InviteCodeModal from '../components/InviteCodeModal.vue'
 import logoUrl from '../assets/landing/logo.svg'
 import tokenUrl from '../assets/landing/token.svg'
 import userProfileUrl from '../assets/landing/user-profile.svg'
@@ -22,6 +25,65 @@ import resultPackageUrl from '../assets/landing/result-package.png'
 import resultQrUrl from '../assets/landing/result-qr.svg'
 import dotUrl from '../assets/landing/dot.svg'
 import '../styles/landing.css'
+
+const isInviteModalOpen = ref(false)
+const hasInviteCodeError = ref(false)
+const inviteCodeErrorMessage = ref('올바른 코드가 아닙니다')
+const isInviteCodeLoading = ref(false)
+const route = useRoute()
+const router = useRouter()
+
+function openInviteModal() {
+  hasInviteCodeError.value = false
+  isInviteModalOpen.value = true
+}
+
+function closeInviteModal() {
+  isInviteModalOpen.value = false
+  hasInviteCodeError.value = false
+}
+
+function clearInviteCodeError() {
+  hasInviteCodeError.value = false
+}
+
+async function submitInviteCode(code) {
+  clearInviteCodeError()
+  isInviteCodeLoading.value = true
+
+  try {
+    const response = await fetch('/api/invite-code/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    })
+
+    if (!response.ok) {
+      hasInviteCodeError.value = true
+      inviteCodeErrorMessage.value =
+        response.status === 401 ? '올바른 코드가 아닙니다' : '인증 중 문제가 발생했습니다'
+      return
+    }
+
+    const result = await response.json()
+    await router.push(result.redirectTo || '/builder')
+  } catch {
+    hasInviteCodeError.value = true
+    inviteCodeErrorMessage.value = '인증 중 문제가 발생했습니다'
+  } finally {
+    isInviteCodeLoading.value = false
+  }
+}
+
+watch(
+  () => route.query.invite,
+  (invite) => {
+    if (invite === 'required') {
+      openInviteModal()
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -53,7 +115,7 @@ import '../styles/landing.css'
           상품 정보만 입력하세요.<br />
           상품사진과 모바일 페이지까지 한번에 만들어 드려요.
         </p>
-        <RouterLink class="landing-button" to="/builder">시작하기</RouterLink>
+        <button class="landing-button" type="button" @click="openInviteModal">시작하기</button>
         <p class="landing-hero__note">디자인 경험 없이도, 복잡한 쇼핑몰 없이도 OK!</p>
       </div>
 
@@ -246,7 +308,7 @@ import '../styles/landing.css'
           <h2 id="landing-final-title">좋은 상품이 더 많은 손님을 만나도록</h2>
           <p>첫 상품 페이지, 바로온장과 함께 만들어보세요.</p>
         </div>
-        <RouterLink class="landing-button" to="/builder">시작하기</RouterLink>
+        <button class="landing-button" type="button" @click="openInviteModal">시작하기</button>
       </div>
     </section>
 
@@ -255,5 +317,15 @@ import '../styles/landing.css'
       <p>좋은 상품을 간편하게 알리는 한 페이지.</p>
       <small>© itswave. All rights reserved.</small>
     </footer>
+
+    <InviteCodeModal
+      :open="isInviteModalOpen"
+      :has-error="hasInviteCodeError"
+      :error-message="inviteCodeErrorMessage"
+      :loading="isInviteCodeLoading"
+      @close="closeInviteModal"
+      @input="clearInviteCodeError"
+      @submit="submitInviteCode"
+    />
   </div>
 </template>
