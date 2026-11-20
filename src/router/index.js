@@ -24,6 +24,10 @@ router.beforeEach(async (to) => {
     return true
   }
 
+  if (import.meta.env.DEV) {
+    return true
+  }
+
   try {
     const response = await fetch('/api/session', { headers: { Accept: 'application/json' } })
     const result = response.ok ? await response.json() : { authenticated: false }

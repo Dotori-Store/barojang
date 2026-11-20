@@ -52,6 +52,11 @@ async function submitInviteCode(code) {
   isInviteCodeLoading.value = true
 
   try {
+    if (import.meta.env.DEV) {
+      await router.push('/builder')
+      return
+    }
+
     const response = await fetch('/api/invite-code/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
