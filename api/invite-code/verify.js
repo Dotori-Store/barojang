@@ -1,5 +1,9 @@
 import { verify } from '@node-rs/argon2'
-import { createSessionCookie, createSessionToken } from '../../server/session.js'
+import {
+  createSessionCookie,
+  createSessionToken,
+  isLocalDevelopment,
+} from '../../server/session.js'
 
 function getRequestBody(request) {
   if (typeof request.body === 'string') {
@@ -27,14 +31,6 @@ export default async function handler(request, response) {
     return response.status(405).json({ error: 'Method not allowed' })
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, '')
-  const adminKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (!supabaseUrl || !adminKey || !process.env.SESSION_SECRET) {
-    console.error('Invite code API environment variables are missing.')
-    return response.status(500).json({ error: 'Server configuration error' })
-  }
-
   let code = ''
   try {
     code = String(getRequestBody(request).code || '').trim()
@@ -44,6 +40,20 @@ export default async function handler(request, response) {
 
   if (!code || code.length > 128) {
     return response.status(401).json({ error: 'Invalid invite code' })
+  }
+
+  if (isLocalDevelopment()) {
+    const sessionToken = createSessionToken('local-dev-user')
+    response.setHeader('Set-Cookie', createSessionCookie(sessionToken))
+    return response.status(200).json({ redirectTo: '/builder' })
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, '')
+  const adminKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !adminKey || !process.env.SESSION_SECRET) {
+    console.error('Invite code API environment variables are missing.')
+    return response.status(500).json({ error: 'Server configuration error' })
   }
 
   try {
