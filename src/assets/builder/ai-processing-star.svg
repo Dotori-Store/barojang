@@ -1,0 +1,18 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="ico-star">
+<g id="Vector">
+<path d="M16.5963 23.9672L19.1283 16.4679H20.6822L23.2143 23.9672L30.8105 26.467V28.001L23.2143 30.5007L20.6822 38H19.1283L16.5963 30.5007L9 28.001V26.467L16.5963 23.9672Z" fill-rule="evenodd" clip-rule="evenodd" fill="url(#paint0_linear_0_6)"/>
+<path d="M30.9278 13.8611L32.2315 10H33.7853L35.089 13.8611L39 15.1481V16.6821L35.089 17.9691L33.7853 21.8302H32.2315L30.9278 17.9691L27.0168 16.6821V15.1481L30.9278 13.8611Z" fill-rule="evenodd" clip-rule="evenodd" fill="url(#paint1_linear_0_6)"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_6" x1="9" y1="24" x2="39" y2="24" gradientUnits="userSpaceOnUse">
+<stop stop-color="#6A11CB"/>
+<stop offset="1" stop-color="#2C2CBF"/>
+</linearGradient>
+<linearGradient id="paint1_linear_0_6" x1="9" y1="24" x2="39" y2="24" gradientUnits="userSpaceOnUse">
+<stop stop-color="#6A11CB"/>
+<stop offset="1" stop-color="#2C2CBF"/>
+</linearGradient>
+</defs>
+</svg>

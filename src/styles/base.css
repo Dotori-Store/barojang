@@ -8,8 +8,10 @@
   --color-carrot: #ff6430;
   --color-white: #ffffff;
   --color-olive-400: #7c8576;
+  --color-olive-500: #515c4e;
   --color-green-500: #80ae4a;
   --color-olive-200: #ecf0ec;
+  --color-olive-300: #ccd4cc;
   --color-olive-100: #f6f7f6;
   --color-beige-100: #faf7f3;
   --color-olive-800: #375342;
@@ -19,8 +21,12 @@
   --color-text-card: #34373b;
   --color-text-body: #72767d;
   --color-product-dark: #304934;
+  --color-product-text: #28372d;
   --color-ai-surface: #fff4e8;
+  --color-ai-gradient-start: #6a11cb;
+  --color-ai-gradient-end: #2c2cbf;
   --color-carrot-deep: #f24714;
+  --color-carrot-soft: rgb(255 100 48 / 8%);
   --color-white-overlay: rgb(255 255 255 / 10%);
   --color-image-shadow: rgb(0 0 0 / 17%);
 
