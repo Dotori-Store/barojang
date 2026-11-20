@@ -1,7 +1,30 @@
 :root {
-  font-family: sans-serif;
-  color: #1f2933;
-  background: #ffffff;
+  --color-text-dark: #13161c;
+  --color-text-muted: #7b818b;
+  --color-surface-blue: #f7f8fa;
+  --color-gray-6: #f2f2f2;
+  --color-carrot: #ff6430;
+  --color-white: #ffffff;
+  --color-olive-400: #7c8576;
+  --color-green-500: #80ae4a;
+  --color-olive-200: #ecf0ec;
+  --color-olive-100: #f6f7f6;
+  --color-beige-100: #faf7f3;
+  --color-olive-800: #375342;
+
+  /* Direct Figma fills that are not registered as shared color styles. */
+  --color-text-heading: #24272c;
+  --color-text-card: #34373b;
+  --color-text-body: #72767d;
+  --color-product-dark: #304934;
+  --color-ai-surface: #fff4e8;
+  --color-carrot-deep: #f24714;
+  --color-white-overlay: rgb(255 255 255 / 10%);
+  --color-image-shadow: rgb(0 0 0 / 17%);
+
+  font-family: 'A2z', 'Pretendard GOV';
+  color: var(--color-text-dark);
+  background: var(--color-white);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -25,7 +48,7 @@ a {
   justify-content: space-between;
   min-height: 64px;
   padding: 0 24px;
-  border-bottom: 1px solid #d9dde3;
+  border-bottom: 1px solid var(--color-surface-blue);
 }
 
 .app-brand {
@@ -48,7 +71,7 @@ a {
 
 .page-placeholder__eyebrow,
 .placeholder-meta {
-  color: #59636e;
+  color: var(--color-text-muted);
 }
 
 .page-placeholder h1 {
