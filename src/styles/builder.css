@@ -19,12 +19,16 @@
 }
 
 .builder-header__brand {
-  color: var(--color-text-heading);
-  font-size: 29px;
-  font-weight: 700;
-  line-height: normal;
+  display: flex;
+  align-items: center;
+  width: 114px;
+  height: 42px;
   text-decoration: none;
-  white-space: nowrap;
+}
+
+.builder-header__brand img {
+  width: 100%;
+  height: auto;
 }
 
 /* Main */
@@ -801,6 +805,15 @@
   .builder-preview,
   .builder-complete {
     width: 100%;
+  }
+
+  .builder-header__brand {
+    width: 96px;
+  }
+
+  .builder-header__brand img {
+    width: 94px;
+    height: auto;
   }
 
   .dummy-product {

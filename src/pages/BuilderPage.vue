@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import logoUrl from '../assets/landing/logo.svg'
 import stepLineUrl from '../assets/builder/step-line.svg'
 import uploadUrl from '../assets/builder/upload.svg'
 import aiStarUrl from '../assets/builder/ai-star.svg'
@@ -120,7 +121,9 @@ const resetBuilder = () => {
 <template>
   <div class="builder-page">
     <header class="builder-header">
-      <RouterLink to="/" class="builder-header__brand">바로온장</RouterLink>
+      <RouterLink to="/" class="builder-header__brand" aria-label="바로온장 홈">
+        <img :src="logoUrl" alt="바로온장" />
+      </RouterLink>
     </header>
 
     <main v-if="currentView === 1" class="builder-main">
