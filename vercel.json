@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/p/:slug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/enter",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/mypage",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/builder",
+      "destination": "/index.html"
+    }
+  ]
+}
