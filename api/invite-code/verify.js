@@ -74,7 +74,7 @@ export default async function handler(request, response) {
     const sessionToken = createSessionToken(matchedUserId)
     response.setHeader('Set-Cookie', createSessionCookie(sessionToken))
 
-    return response.status(200).json({ redirectTo: '/builder' })
+    return response.status(200).json({ redirectTo: '/mypage' })
   } catch (error) {
     console.error('Invite code verification failed:', error)
     return response.status(500).json({ error: 'Server error' })

@@ -9,8 +9,13 @@ const routes = [
   { path: '/', name: 'landing', component: LandingPage },
   { path: '/enter', name: 'code-entry', component: CodeEntryPage },
   { path: '/mypage', name: 'mypage', component: MyPage, meta: { requiresInvite: true } },
-  { path: '/builder', name: 'builder', component: BuilderPage, meta: { requiresInvite: true } },
-  { path: '/p/:id', name: 'product', component: ProductPage, props: true },
+  {
+    path: '/builder',
+    name: 'builder',
+    component: BuilderPage,
+    meta: { requiresInvite: true, requiresNoProduct: true },
+  },
+  { path: '/p/:slug', name: 'product', component: ProductPage, props: true },
 ]
 
 const router = createRouter({
@@ -24,15 +29,21 @@ router.beforeEach(async (to) => {
     return true
   }
 
-  if (import.meta.env.DEV) {
-    return true
-  }
-
   try {
     const response = await fetch('/api/session', { headers: { Accept: 'application/json' } })
     const result = response.ok ? await response.json() : { authenticated: false }
 
     if (result.authenticated) {
+      if (to.meta.requiresNoProduct) {
+        const productResponse = await fetch('/api/products', { headers: { Accept: 'application/json' } })
+        if (!productResponse.ok) return { name: 'mypage' }
+        const productResult = await productResponse.json()
+
+        if (productResult.product) {
+          return { name: 'mypage' }
+        }
+      }
+
       return true
     }
   } catch {

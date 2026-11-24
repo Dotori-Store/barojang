@@ -1,10 +1,8 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import AppHeader from '../components/AppHeader.vue'
 import InviteCodeModal from '../components/InviteCodeModal.vue'
-import logoUrl from '../assets/landing/logo.svg'
-import tokenUrl from '../assets/landing/token.svg'
-import userProfileUrl from '../assets/landing/user-profile.svg'
 import heroOrangeUrl from '../assets/landing/hero-orange.png'
 import heroFishUrl from '../assets/landing/hero-fish.png'
 import heroBerriesUrl from '../assets/landing/hero-berries.png'
@@ -38,6 +36,22 @@ function openInviteModal() {
   isInviteModalOpen.value = true
 }
 
+async function handleStartClick() {
+  try {
+    const response = await fetch('/api/session', { headers: { Accept: 'application/json' } })
+    const result = response.ok ? await response.json() : { authenticated: false }
+
+    if (result.authenticated) {
+      await router.push('/mypage')
+      return
+    }
+  } catch {
+    // 세션 확인 실패 시 초대코드 입력으로 안전하게 되돌린다.
+  }
+
+  openInviteModal()
+}
+
 function closeInviteModal() {
   isInviteModalOpen.value = false
   hasInviteCodeError.value = false
@@ -52,11 +66,6 @@ async function submitInviteCode(code) {
   isInviteCodeLoading.value = true
 
   try {
-    if (import.meta.env.DEV) {
-      await router.push('/builder')
-      return
-    }
-
     const response = await fetch('/api/invite-code/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -71,7 +80,7 @@ async function submitInviteCode(code) {
     }
 
     const result = await response.json()
-    await router.push(result.redirectTo || '/builder')
+    await router.push(result.redirectTo || '/mypage')
   } catch {
     hasInviteCodeError.value = true
     inviteCodeErrorMessage.value = '인증 중 문제가 발생했습니다'
@@ -89,26 +98,12 @@ watch(
   },
   { immediate: true },
 )
+
 </script>
 
 <template>
   <div class="landing">
-    <header class="landing-header">
-      <div class="landing-header__inner">
-        <RouterLink class="landing-header__logo" to="/" aria-label="바로온장 홈">
-          <img :src="logoUrl" alt="바로온장" />
-        </RouterLink>
-
-        <div class="landing-header__account">
-          <div class="landing-coin" aria-label="시연용 남은 코인 8개">
-            <img :src="tokenUrl" alt="" aria-hidden="true" />
-            <span class="landing-coin__number">8</span>
-            <span class="landing-coin__unit">코인</span>
-          </div>
-          <img class="landing-header__profile" :src="userProfileUrl" alt="사용자 프로필" />
-        </div>
-      </div>
-    </header>
+    <AppHeader />
 
     <section class="landing-hero" aria-labelledby="landing-hero-title">
       <div class="landing-hero__copy">
@@ -120,7 +115,7 @@ watch(
           상품 정보만 입력하세요.<br />
           상품사진과 모바일 페이지까지 한번에 만들어 드려요.
         </p>
-        <button class="landing-button" type="button" @click="openInviteModal">시작하기</button>
+        <button class="landing-button" type="button" @click="handleStartClick">시작하기</button>
         <p class="landing-hero__note">디자인 경험 없이도, 복잡한 쇼핑몰 없이도 OK!</p>
       </div>
 
@@ -313,7 +308,7 @@ watch(
           <h2 id="landing-final-title">좋은 상품이 더 많은 손님을 만나도록</h2>
           <p>첫 상품 페이지, 바로온장과 함께 만들어보세요.</p>
         </div>
-        <button class="landing-button" type="button" @click="openInviteModal">시작하기</button>
+        <button class="landing-button" type="button" @click="handleStartClick">시작하기</button>
       </div>
     </section>
 

@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:full": "node --env-file-if-exists=.env.admin.local scripts/dev-server.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "passcodes:register": "node --env-file-if-exists=.env.admin.local scripts/register-passcodes.mjs"
   },
   "dependencies": {
+    "qrcode": "^1.5.4",
     "vue": "^3.5.24",
     "vue-router": "^4.6.3"
   },

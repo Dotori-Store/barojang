@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import QRCode from 'qrcode'
 import logoUrl from '../assets/landing/logo.svg'
 import stepLineUrl from '../assets/builder/step-line.svg'
 import uploadUrl from '../assets/builder/upload.svg'
@@ -11,7 +12,6 @@ import aiStyleStudioUrl from '../assets/builder/ai-style-studio.png'
 import aiStyleTableUrl from '../assets/builder/ai-style-table.png'
 import modalCloseUrl from '../assets/builder/modal-close.svg'
 import dummyProductUrl from '../assets/builder/dummy-product.png'
-import dummyQrUrl from '../assets/builder/dummy-qr.svg'
 import downloadUrl from '../assets/builder/download.svg'
 import linkUrl from '../assets/builder/link.svg'
 import '../styles/builder.css'
@@ -30,6 +30,15 @@ const initialForm = {
 
 const currentView = ref(1)
 const form = reactive({ ...initialForm })
+const productImageFile = ref(null)
+const productImagePreviewUrl = ref('')
+const productImageError = ref('')
+const isPublishing = ref(false)
+const publishError = ref('')
+const publishedProduct = ref(null)
+const publicUrl = ref('')
+const qrCodeUrl = ref('')
+const shareFeedback = ref('')
 const isFilled = (value) => value.trim().length > 0
 const isAiModalOpen = ref(false)
 const aiModalStep = ref('styles')
@@ -37,6 +46,80 @@ const selectedAiStyle = ref('clean')
 const aiCopyState = ref('idle')
 let aiPreviewTimer
 let aiCopyTimer
+
+const allowedImageTypes = ['image/jpeg', 'image/png']
+const maxImageSize = 5 * 1024 * 1024
+
+const cropImageToSquare = (file) =>
+  new Promise((resolve, reject) => {
+    const sourceUrl = URL.createObjectURL(file)
+    const image = new Image()
+
+    image.onload = () => {
+      const side = Math.min(image.naturalWidth, image.naturalHeight)
+      const sourceX = (image.naturalWidth - side) / 2
+      const sourceY = (image.naturalHeight - side) / 2
+      const canvas = document.createElement('canvas')
+      canvas.width = side
+      canvas.height = side
+
+      const context = canvas.getContext('2d')
+      context.drawImage(image, sourceX, sourceY, side, side, 0, 0, side, side)
+
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(sourceUrl)
+          if (!blob) {
+            reject(new Error('이미지를 처리하지 못했습니다.'))
+            return
+          }
+
+          resolve(
+            new File([blob], file.name, {
+              type: file.type,
+              lastModified: file.lastModified,
+            }),
+          )
+        },
+        file.type,
+        0.92,
+      )
+    }
+
+    image.onerror = () => {
+      URL.revokeObjectURL(sourceUrl)
+      reject(new Error('이미지를 불러오지 못했습니다.'))
+    }
+
+    image.src = sourceUrl
+  })
+
+const selectProductImage = async (event) => {
+  const [file] = event.target.files
+  event.target.value = ''
+
+  if (!file) return
+  productImageError.value = ''
+
+  if (!allowedImageTypes.includes(file.type)) {
+    productImageError.value = 'JPG 또는 PNG 파일만 올릴 수 있어요.'
+    return
+  }
+
+  try {
+    const croppedFile = await cropImageToSquare(file)
+    if (croppedFile.size > maxImageSize) {
+      productImageError.value = '정사각형으로 자른 이미지가 5MB를 넘어요.'
+      return
+    }
+
+    if (productImagePreviewUrl.value) URL.revokeObjectURL(productImagePreviewUrl.value)
+    productImageFile.value = croppedFile
+    productImagePreviewUrl.value = URL.createObjectURL(croppedFile)
+  } catch (error) {
+    productImageError.value = error.message
+  }
+}
 
 const aiStyles = [
   { id: 'clean', label: '깔끔한 배경', image: aiStyleCleanUrl },
@@ -108,13 +191,103 @@ const resetAiCopy = () => {
 onBeforeUnmount(() => {
   window.clearTimeout(aiPreviewTimer)
   window.clearTimeout(aiCopyTimer)
+  if (productImagePreviewUrl.value) URL.revokeObjectURL(productImagePreviewUrl.value)
   document.body.style.overflow = ''
 })
 
 const resetBuilder = () => {
   resetAiCopy()
+  if (productImagePreviewUrl.value) URL.revokeObjectURL(productImagePreviewUrl.value)
+  productImageFile.value = null
+  productImagePreviewUrl.value = ''
+  productImageError.value = ''
+  publishError.value = ''
+  publishedProduct.value = null
+  publicUrl.value = ''
+  qrCodeUrl.value = ''
+  shareFeedback.value = ''
   Object.assign(form, initialForm)
   goTo(1)
+}
+
+const parsePrice = () => {
+  const digits = form.price.replace(/[^0-9]/g, '')
+  return digits ? Number(digits) : null
+}
+
+const publishProduct = async () => {
+  if (isPublishing.value) return
+
+  isPublishing.value = true
+  publishError.value = ''
+
+  try {
+    const price = parsePrice()
+    if (!Number.isSafeInteger(price)) throw new Error('판매 가격을 숫자로 입력해 주세요.')
+
+    let imagePath = null
+
+    if (productImageFile.value) {
+      const prepareResponse = await fetch('/api/product-image/upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contentType: productImageFile.value.type }),
+      })
+      const preparedUpload = await prepareResponse.json()
+      if (!prepareResponse.ok) throw new Error(preparedUpload.error || '이미지 업로드를 준비하지 못했습니다.')
+
+      const uploadResponse = await fetch(preparedUpload.uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': productImageFile.value.type },
+        body: productImageFile.value,
+      })
+      if (!uploadResponse.ok) throw new Error('이미지를 업로드하지 못했습니다.')
+
+      imagePath = preparedUpload.path
+    }
+
+    const saveResponse = await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...form,
+        price,
+        imagePath,
+      }),
+    })
+    const saved = await saveResponse.json()
+    if (!saveResponse.ok) throw new Error(saved.error || '상품 정보를 저장하지 못했습니다.')
+
+    publishedProduct.value = saved.product
+    publicUrl.value = new URL(`/p/${saved.product.public_slug}`, window.location.origin).href
+    qrCodeUrl.value = await QRCode.toDataURL(publicUrl.value, {
+      width: 400,
+      margin: 2,
+      color: { dark: '#13161C', light: '#FFFFFF' },
+    })
+    goTo('complete')
+  } catch (error) {
+    publishError.value = error.message
+  } finally {
+    isPublishing.value = false
+  }
+}
+
+const copyPublicUrl = async () => {
+  try {
+    await navigator.clipboard.writeText(publicUrl.value)
+    shareFeedback.value = '주소를 복사했어요.'
+  } catch {
+    shareFeedback.value = '주소를 길게 눌러 복사해 주세요.'
+  }
+}
+
+const downloadQrCode = () => {
+  if (!qrCodeUrl.value) return
+  const link = document.createElement('a')
+  link.href = qrCodeUrl.value
+  link.download = `barojang-${publishedProduct.value.public_slug}-qr.png`
+  link.click()
 }
 </script>
 
@@ -158,14 +331,14 @@ const resetBuilder = () => {
           </div>
 
           <div class="product-field">
-            <label for="product-price">판매 가격</label>
+            <label for="product-price">판매 가격(원)</label>
             <input
               id="product-price"
               v-model="form.price"
               class="product-field__control"
               type="text"
               inputmode="numeric"
-              placeholder="예: 15,000원"
+              placeholder="예: 15,000"
               autocomplete="off"
               :aria-invalid="!isFilled(form.price)"
               aria-describedby="product-price-error"
@@ -232,13 +405,29 @@ const resetBuilder = () => {
         <div class="product-form__fields product-form__fields--step-two">
           <div class="product-field">
             <span class="product-field__label">상품 사진</span>
-            <div class="builder-upload" aria-label="DUMMY 상품 이미지 사용">
-              <img :src="uploadUrl" alt="" aria-hidden="true" />
-              <div>
-                <strong>상품 사진을 올려주세요</strong>
-                <p>사진 1장 · 휴대폰 사진도 좋아요</p>
-              </div>
-            </div>
+            <label class="builder-upload" for="product-image">
+              <input
+                id="product-image"
+                class="builder-upload__input"
+                type="file"
+                accept="image/jpeg,image/png"
+                @change="selectProductImage"
+              />
+              <img
+                v-if="productImagePreviewUrl"
+                class="builder-upload__preview"
+                :src="productImagePreviewUrl"
+                alt="정사각형으로 자른 상품 사진 미리보기"
+              />
+              <template v-else>
+                <img :src="uploadUrl" alt="" aria-hidden="true" />
+                <div>
+                  <strong>상품 사진을 올려주세요</strong>
+                  <p>JPG 또는 PNG · 가운데 기준 정사각형 자동 자르기</p>
+                </div>
+              </template>
+            </label>
+            <p v-if="productImageError" class="product-field__error">{{ productImageError }}</p>
             <button
               class="builder-ai-button builder-ai-button--wide"
               type="button"
@@ -390,7 +579,11 @@ const resetBuilder = () => {
 
       <section class="dummy-product" aria-label="DUMMY 상품 페이지 미리보기">
         <header class="dummy-product__header">{{ form.shopName }}</header>
-        <img class="dummy-product__hero" :src="dummyProductUrl" alt="DUMMY 상품 이미지" />
+        <img
+          class="dummy-product__hero"
+          :src="productImagePreviewUrl || dummyProductUrl"
+          alt="상품 이미지"
+        />
 
         <div class="dummy-product__summary">
           <p>{{ form.feature }}</p>
@@ -403,7 +596,7 @@ const resetBuilder = () => {
           <p class="dummy-product__market">{{ form.marketName }}</p>
           <h3>{{ form.shopName }}</h3>
           <p class="dummy-product__description">{{ form.description }}</p>
-          <img :src="dummyProductUrl" alt="DUMMY 상품 상세 이미지" />
+          <img :src="productImagePreviewUrl || dummyProductUrl" alt="상품 상세 이미지" />
           <p class="dummy-product__guide">배송비와 배송가능 여부는 전화로 확인해주세요.</p>
         </div>
 
@@ -413,7 +606,15 @@ const resetBuilder = () => {
       </section>
 
       <div class="builder-preview__buttons">
-        <button type="button" class="product-form__next" @click="goTo('complete')">발행하기</button>
+        <button
+          type="button"
+          class="product-form__next"
+          :disabled="isPublishing"
+          @click="publishProduct"
+        >
+          {{ isPublishing ? '발행 중...' : '발행하기' }}
+        </button>
+        <p v-if="publishError" class="product-field__error">{{ publishError }}</p>
         <button type="button" class="builder-button-secondary" @click="resetBuilder">다시 만들기</button>
       </div>
     </main>
@@ -425,18 +626,21 @@ const resetBuilder = () => {
       </h1>
 
       <div class="builder-complete__share">
-        <img class="builder-complete__qr" :src="dummyQrUrl" alt="DUMMY QR코드" />
-        <button type="button">
+        <img class="builder-complete__qr" :src="qrCodeUrl" alt="상품 공개 주소 QR코드" />
+        <a class="builder-complete__url" :href="publicUrl" target="_blank" rel="noopener">
+          {{ publicUrl }}
+        </a>
+        <button type="button" @click="downloadQrCode">
           QR코드 받기
           <img :src="downloadUrl" alt="" aria-hidden="true" />
         </button>
-        <button type="button">
-          주소 복사하기
+        <button type="button" @click="copyPublicUrl">
+          {{ shareFeedback || '주소 복사하기' }}
           <img :src="linkUrl" alt="" aria-hidden="true" />
         </button>
       </div>
 
-      <RouterLink class="builder-complete__home" to="/">홈으로</RouterLink>
+      <RouterLink class="builder-complete__home" to="/mypage">마이페이지</RouterLink>
     </main>
 
     <div

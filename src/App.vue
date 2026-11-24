@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import AppHeader from './components/AppHeader.vue'
 
 const route = useRoute()
-const isStandalonePage = computed(() => ['landing', 'builder'].includes(route.name))
+const isStandalonePage = computed(() => ['landing', 'builder', 'mypage', 'product'].includes(route.name))
 </script>
 
 <template>
