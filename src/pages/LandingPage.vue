@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 import InviteCodeModal from '../components/InviteCodeModal.vue'
 import heroOrangeUrl from '../assets/landing/hero-orange.png'
+import logoUrl from '../assets/landing/logo.svg'
 import heroFishUrl from '../assets/landing/hero-fish.png'
 import heroBerriesUrl from '../assets/landing/hero-berries.png'
 import heroAnchovyUrl from '../assets/landing/hero-anchovy.png'
@@ -313,9 +314,9 @@ watch(
     </section>
 
     <footer class="landing-footer">
-      <strong>바로온장</strong>
+      <img :src="logoUrl" alt="바로온장" />
       <p>좋은 상품을 간편하게 알리는 한 페이지.</p>
-      <small>© itswave. All rights reserved.</small>
+      <small>© ITSWAVE. ALL RIGHTS RESERVED.</small>
     </footer>
 
     <InviteCodeModal

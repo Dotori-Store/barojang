@@ -83,32 +83,6 @@
   outline-offset: 3px;
 }
 
-.app-header__profile-tooltip {
-  position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
-  z-index: 20;
-  width: max-content;
-  max-width: 240px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  color: var(--color-white);
-  background: var(--color-text-dark);
-  font-size: 13px;
-  line-height: 1.4;
-  box-shadow: 0 8px 24px rgb(19 22 28 / 18%);
-}
-
-.app-header__profile-tooltip::before {
-  position: absolute;
-  right: 13px;
-  bottom: 100%;
-  border-right: 6px solid transparent;
-  border-bottom: 7px solid var(--color-text-dark);
-  border-left: 6px solid transparent;
-  content: '';
-}
-
 @media (max-width: 900px) {
   .app-header__inner { width: calc(100% - 40px); }
 }

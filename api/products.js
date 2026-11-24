@@ -58,8 +58,8 @@ function createPublicSlug() {
 export default async function handler(request, response) {
   response.setHeader('Cache-Control', 'no-store')
 
-  if (!['GET', 'POST'].includes(request.method)) {
-    response.setHeader('Allow', 'GET, POST')
+  if (!['GET', 'POST', 'DELETE'].includes(request.method)) {
+    response.setHeader('Allow', 'GET, POST, DELETE')
     return response.status(405).json({ error: 'Method not allowed' })
   }
 
@@ -93,6 +93,62 @@ export default async function handler(request, response) {
       return response.status(200).json({ product: withImageUrl(product, supabaseUrl) })
     } catch (error) {
       console.error('Product query failed:', error)
+      return response.status(500).json({ error: 'Server error' })
+    }
+  }
+
+  if (request.method === 'DELETE') {
+    try {
+      const productQuery = new URLSearchParams({
+        select: 'id,image_path',
+        user_id: `eq.${session.userId}`,
+        limit: '1',
+      })
+      const productResponse = await fetch(`${supabaseUrl}/rest/v1/products?${productQuery}`, {
+        headers: getSupabaseHeaders(adminKey),
+      })
+
+      if (!productResponse.ok) {
+        console.error('Product query before delete failed:', productResponse.status)
+        return response.status(502).json({ error: 'Could not delete product' })
+      }
+
+      const [product] = await productResponse.json()
+      if (!product) return response.status(200).json({ deleted: true })
+
+      const deleteQuery = new URLSearchParams({ user_id: `eq.${session.userId}` })
+      const deleteResponse = await fetch(`${supabaseUrl}/rest/v1/products?${deleteQuery}`, {
+        method: 'DELETE',
+        headers: {
+          ...getSupabaseHeaders(adminKey),
+          Prefer: 'return=minimal',
+        },
+      })
+
+      if (!deleteResponse.ok) {
+        console.error('Product delete failed:', deleteResponse.status)
+        return response.status(502).json({ error: 'Could not delete product' })
+      }
+
+      let imageDeleted = !product.image_path
+      if (product.image_path?.startsWith(`${session.userId}/`)) {
+        const encodedPath = product.image_path.split('/').map(encodeURIComponent).join('/')
+        const imageResponse = await fetch(
+          `${supabaseUrl}/storage/v1/object/product-images/${encodedPath}`,
+          {
+            method: 'DELETE',
+            headers: getSupabaseHeaders(adminKey),
+          },
+        )
+        imageDeleted = imageResponse.ok
+        if (!imageResponse.ok) {
+          console.error('Product image delete failed:', imageResponse.status)
+        }
+      }
+
+      return response.status(200).json({ deleted: true, imageDeleted })
+    } catch (error) {
+      console.error('Product delete failed:', error)
       return response.status(500).json({ error: 'Server error' })
     }
   }

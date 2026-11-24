@@ -21,7 +21,7 @@ function getSupabaseHeaders(adminKey) {
 }
 
 export default async function handler(request, response) {
-  response.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300')
+  response.setHeader('Cache-Control', 'no-store')
 
   if (request.method !== 'GET') {
     response.setHeader('Allow', 'GET')
